@@ -32,7 +32,9 @@ class TableViewController: UITableViewController  {
         super.viewDidLoad()
         checkInternet()
         loadData()
-        navigationItem.title = "\(newArrayy!.count)Found In Data"
+        if isInternetAvailable == false{
+            navigationItem.title = "\(newArrayy!.count) Found In Data" //realm
+        }
         postManager.perfomRequest { [weak self] result in
             print("success")
             switch result {
@@ -40,12 +42,13 @@ class TableViewController: UITableViewController  {
                 print(error)
             case .success(let holiday):
                 self?.newArray = holiday
-                
             }
         }
     }
     @IBAction func refresh(_ sender: UIRefreshControl) {
-        navigationItem.title = "\(newArrayy!.count) Found In Data" //realm
+        if isInternetAvailable == false{
+            navigationItem.title = "\(newArrayy!.count) Found In Data" //realm
+        }
         //  print(loadData())
         sender.endRefreshing()
         tableView.reloadData()
@@ -86,9 +89,11 @@ class TableViewController: UITableViewController  {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             if isInternetAvailable == true{
+                deleteOnlineAlert()
                 print("you are online")
             }else{
-                updateModel(at: indexPath)
+                //updateModel(at: indexPath)
+                deleteOfflineAlert(indexpath: indexPath)
             }
         }
     }
@@ -143,6 +148,28 @@ class TableViewController: UITableViewController  {
                 print("error delete category  \(error)")
             }
         }
+    }
+    //MARK: - Delete online Alert
+    func deleteOnlineAlert(){
+        let alert = UIAlertController(title: "Unable to Delete", message: "This Data is online , you can delete this offline", preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .cancel) { (action) in
+        }
+        alert.addAction(action)
+        present(alert , animated: true , completion: nil)
+    }
+    
+    //MARK: - deletOffline Alert
+    func deleteOfflineAlert(indexpath: IndexPath){
+        let alert = UIAlertController(title: "Are you want to Delete", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "YES", style: .default) { (action) in
+            self.updateModel(at: indexpath)
+        }
+        let action2 = UIAlertAction(title: "NO", style: .cancel) { (action) in
+        }
+        alert.addAction(action2)
+        alert.addAction(action)
+        present(alert , animated: true , completion: nil)
     }
 }// end class
 
